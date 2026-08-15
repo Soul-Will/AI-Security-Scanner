@@ -1,0 +1,190 @@
+# =========================
+# Operating system files
+# =========================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Editors and IDEs
+# =========================
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+.idea/
+*.swp
+*.swo
+
+# =========================
+# Environment variables
+# =========================
+
+# Root environment files
+.env
+.env.*
+!.env.example
+
+# Backend environment files
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Frontend environment files
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Local environment overrides
+frontend/.env.local
+frontend/.env.*.local
+backend/.env.local
+backend/.env.*.local
+
+# =========================
+# Frontend: Vite / Node.js
+# =========================
+
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# =========================
+# Backend: Python
+# =========================
+
+backend/__pycache__/
+backend/**/*.py[cod]
+backend/*.py[cod]
+
+backend/.venv/
+backend/venv/
+backend/env/
+backend/ENV/
+
+backend/build/
+backend/dist/
+backend/*.egg-info/
+backend/**/*.egg-info/
+backend/.eggs/
+
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+
+backend/.coverage
+backend/.coverage.*
+backend/htmlcov/
+
+# =========================
+# Temporary scan files
+# =========================
+
+backend/tmp/
+backend/temp/
+backend/.tmp/
+backend/.cache/
+
+backend/scan_*/
+backend/scans/
+backend/cloned_repos/
+backend/uploads/
+
+# =========================
+# Archives
+# =========================
+
+backend/**/*.zip
+backend/**/*.tar
+backend/**/*.tar.gz
+
+frontend/**/*.zip
+frontend/**/*.tar
+frontend/**/*.tar.gz
+
+# =========================
+# Logs
+# =========================
+
+*.log
+backend/logs/
+frontend/logs/
+
+# =========================
+# Local databases
+# =========================
+
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+backend/**/*.db
+backend/**/*.sqlite
+backend/**/*.sqlite3
+
+# =========================
+# Semgrep output
+# =========================
+
+backend/.semgrep/
+backend/semgrep-results.json
+backend/semgrep-report.json
+backend/reports/
+backend/coverage/
+
+# =========================
+# Local configuration
+# =========================
+
+*.local
+
+
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/frontend/node_modules
+/frontend/.pnp
+frontend/.pnp.*
+frontend/.yarn/*
+!frontend/.yarn/patches
+!frontend/.yarn/plugins
+!frontend/.yarn/releases
+!frontend/.yarn/versions
+
+# testing
+/frontend/coverage
+
+# next.js
+/frontend/.next/
+/frontend/out/
+
+# production
+/frontend/build
+
+# misc
+frontend/.DS_Store
+frontend/*.pem
+
+# debug
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+frontend/.env*
+
+# vercel
+frontend/.vercel
+
+# typescript
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
