@@ -188,3 +188,17 @@ frontend/.vercel
 # typescript
 frontend/*.tsbuildinfo
 frontend/next-env.d.ts
+
+
+
+#Flow Diagrams
+Flow Diagram
+New TRD Files
+
+# Sensitive files
+*.pem
+*.key
+*.crt
+
+# Redis local dumps
+dump.rdb

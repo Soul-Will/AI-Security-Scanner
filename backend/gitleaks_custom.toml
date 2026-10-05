@@ -1,0 +1,18 @@
+# Custom AI Security Scanner Gitleaks Appendix
+# Appended to the master gitleaks config at build time.
+
+[[rules]]
+id = "groq-api-key"
+description = "Groq API Key"
+regex = '''(?i)gsk_[a-zA-Z0-9]{32,90}'''
+secretGroup = 0
+entropy = 3.0
+tags = ["key", "Groq", "AI"]
+
+[[rules]]
+id = "anthropic-api-key-legacy"
+description = "Anthropic API Key (Fallback for varied lengths)"
+regex = '''(?i)sk-ant-[a-zA-Z0-9\-_]{32,100}'''
+secretGroup = 0
+entropy = 3.0
+tags = ["key", "Anthropic", "AI"]

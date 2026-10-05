@@ -1,0 +1,40 @@
+rules:
+  - id: ai-prompt-injection-python
+    patterns:
+      - pattern-either:
+          - pattern: 'openai.chat.completions.create(..., messages=[..., {"content": $USER_INPUT + ...}])'
+          - pattern: 'anthropic.messages.create(..., messages=[..., {"content": $USER_INPUT + ...}])'
+          - pattern: 'groq.chat.completions.create(..., messages=[..., {"content": $USER_INPUT + ...}])'
+          - pattern: 'openai.chat.completions.create(..., messages=[..., {"content": f"...{$USER_INPUT}..."}])'
+    message: "Potential AI Prompt Injection"
+    severity: ERROR
+    languages:
+      - python
+
+  - id: ai-prompt-injection-js
+    patterns:
+      - pattern-either:
+          - pattern: 'openai.chat.completions.create(..., messages=[..., {"content": $USER_INPUT + ...}])'
+          - pattern: 'anthropic.messages.create(..., messages=[..., {"content": $USER_INPUT + ...}])'
+          - pattern: 'groq.chat.completions.create(..., messages=[..., {"content": $USER_INPUT + ...}])'
+    message: "Potential AI Prompt Injection"
+    severity: ERROR
+    languages:
+      - javascript
+      - typescript
+
+  - id: unsanitized-ai-output-js
+    patterns:
+      - pattern-either:
+          - pattern-regex: 'dangerouslySetInnerHTML=\{\{\s*__html\s*:.*\}\}'
+          - pattern-regex: 'v-html=".*"'
+          - pattern: '$X.innerHTML = $AI_OUTPUT'
+      - pattern-not-inside: |
+          ...
+          DOMPurify.sanitize($AI_OUTPUT)
+          ...
+    message: "Unsanitized AI Output"
+    severity: ERROR
+    languages:
+      - javascript
+      - typescript

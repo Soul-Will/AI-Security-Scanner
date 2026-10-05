@@ -1,0 +1,48 @@
+# Base image - lightweight python for pip-audit and semgrep
+FROM python:3.11-slim
+
+# Prevent apt prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies (git for cloning, curl/wget for tools, nodejs/npm for npm audit)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    wget \
+    jq \
+    nodejs \
+    npm \
+    tar \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python-based scanners
+RUN pip install --no-cache-dir semgrep pip-audit
+
+# Install Gitleaks binary (Feature 7)
+RUN wget https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz \
+    && tar -xzf gitleaks_8.21.2_linux_x64.tar.gz \
+    && mv gitleaks /usr/local/bin/ \
+    && rm gitleaks_8.21.2_linux_x64.tar.gz README.md LICENSE
+
+# Construct custom Gitleaks configuration by extending the master config
+COPY gitleaks_custom.toml /tmp/gitleaks_custom.toml
+RUN wget https://raw.githubusercontent.com/gitleaks/gitleaks/master/config/gitleaks.toml -O /opt/gitleaks.toml \
+    && cat /tmp/gitleaks_custom.toml >> /opt/gitleaks.toml \
+    && rm /tmp/gitleaks_custom.toml
+
+# Copy the custom TRD AI ruleset for Semgrep (Feature 6 AST pattern requirement)
+COPY semgrep/ai_rules.yaml /opt/semgrep/ai_rules.yaml
+
+# Download standard Semgrep offline rules internally at build time (network isolation)
+RUN mkdir -p /tmp/dummy && cd /tmp/dummy && touch dummy.py \
+    && semgrep scan --config "p/default" --config "p/owasp-top-ten" \
+       --config "p/cwe-top-25" --config "p/security-audit" --config "p/secure-defaults" --config "p/ci" \
+       --config "p/javascript" --config "p/typescript" --config "p/react" --config "p/python" dummy.py \
+    && cd / && rm -rf /tmp/dummy \
+    && chown -R root:root /root/.semgrep || true
+
+# Enforce secure temp directory
+WORKDIR /tmp/sandbox
+
+# Sleep loop to keep container alive until the worker terminates it
+CMD ["tail", "-f", "/dev/null"]
