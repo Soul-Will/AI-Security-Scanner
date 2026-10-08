@@ -18,6 +18,8 @@ export function InitiateScanModal({ customTrigger }: { customTrigger?: React.Rea
   const [activeTab, setActiveTab] = useState("github");
   const [githubUrl, setGithubUrl] = useState("");
   const [githubPat, setGithubPat] = useState("");
+  const [liveUrl, setLiveUrl] = useState("");
+  const [authAck, setAuthAck] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -66,8 +68,54 @@ export function InitiateScanModal({ customTrigger }: { customTrigger?: React.Rea
       } finally {
         setLoading(false);
       }
+    } else if (activeTab === "url") {
+      if (!liveUrl) {
+        setErrorMsg("Target URL is required.");
+        return;
+      }
+      if (!authAck) {
+        setErrorMsg("You must acknowledge authorization to scan this target.");
+        return;
+      }
+
+      setLoading(true);
+      setErrorMsg("");
+      setSuccessMsg("");
+
+      try {
+        const res = await fetch("http://localhost:8000/api/v1/scan/liveurl", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: liveUrl,
+            auth_acknowledged: authAck,
+            user_id: "c5f01e76-49b6-4234-9eac-dda501ca577c"
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setErrorMsg(data.detail || "Failed to enqueue scan.");
+        } else {
+          setSuccessMsg("Scan successfully enqueued!");
+          setTimeout(() => {
+            setOpen(false);
+            setSuccessMsg("");
+            setLiveUrl("");
+            setAuthAck(false);
+            if (data.job_id) {
+              router.push(`/scan/${data.job_id}`);
+            }
+          }, 1500);
+        }
+      } catch (e: any) {
+        setErrorMsg(e.message || "Network error.");
+      } finally {
+        setLoading(false);
+      }
     } else {
-      setErrorMsg("Only GitHub channel is implemented in the backend currently.");
+      setErrorMsg("This channel is not implemented yet.");
     }
   };
 
@@ -150,8 +198,41 @@ export function InitiateScanModal({ customTrigger }: { customTrigger?: React.Rea
             </TabsContent>
 
             <TabsContent value="url" className="mt-0 space-y-4">
-              <div className="text-sm text-gray-500 p-8 text-center bg-gray-50 rounded-xl border border-dashed">
-                Live URL channel implementation is pending backend deployment.
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-gray-700">Target URL <span className="text-rose-500">*</span></Label>
+                <Input value={liveUrl} onChange={(e) => setLiveUrl(e.target.value)} placeholder="https://example.com" className="h-11 rounded-lg bg-gray-50/50" />
+                <p className="text-[10px] text-gray-500">SSRF protections enforce that this URL must be publicly addressable.</p>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <div className="flex items-start space-x-2 p-3 border rounded-lg bg-gray-50/30">
+                  <Checkbox 
+                    id="auth-ack" 
+                    checked={authAck} 
+                    onCheckedChange={(checked) => setAuthAck(checked as boolean)} 
+                    className="mt-1"
+                  />
+                  <div className="leading-none flex-1">
+                    <Label htmlFor="auth-ack" className="text-xs font-bold text-gray-700 block cursor-pointer">Authorization Acknowledgement <span className="text-rose-500">*</span></Label>
+                    <p className="text-[10px] text-gray-500 mt-1 cursor-pointer">
+                      I confirm that I am authorized to security-test this target. I understand that active DAST requests will be sent to this endpoint.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <Label className="text-xs font-bold text-gray-500 mb-2 block">Quick Test Scenarios:</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={() => setLiveUrl("https://brokencrystals.com/")} className="text-left rounded-xl border p-4 bg-gray-50/30 hover:border-emerald-600 transition-colors">
+                    <div className="font-bold text-sm text-gray-900 mb-1">Standard Target</div>
+                    <div className="text-xs text-gray-500">Public intentionally vulnerable app</div>
+                  </button>
+                  <button onClick={() => setLiveUrl("http://169.254.169.254/latest/meta-data/")} className="text-left rounded-xl border p-4 bg-gray-50/30 hover:border-emerald-600 transition-colors">
+                    <div className="font-bold text-sm text-gray-900 mb-1">Test SSRF Protection</div>
+                    <div className="text-xs text-gray-500">Triggers sync edge rejection</div>
+                  </button>
+                </div>
               </div>
             </TabsContent>
 

@@ -4,7 +4,7 @@ FROM python:3.11-slim
 # Prevent apt prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies (git for cloning, curl/wget for tools, nodejs/npm for npm audit)
+# Install system dependencies (git for cloning, curl/wget for tools, nodejs/npm for npm audit, java for ZAP)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
@@ -13,10 +13,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nodejs \
     npm \
     tar \
+    default-jre-headless \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python-based scanners
-RUN pip install --no-cache-dir semgrep pip-audit
+# Install Python-based scanners and Playwright for headless crawling
+RUN pip install --no-cache-dir semgrep pip-audit playwright
+
+# Install Playwright browser and dependencies (Chromium)
+RUN playwright install --with-deps chromium
+
+# Install OWASP ZAP for DAST
+RUN wget https://github.com/zaproxy/zaproxy/releases/download/v2.17.0/ZAP_2.17.0_Linux.tar.gz -O /tmp/zap.tar.gz \
+    && tar -xzf /tmp/zap.tar.gz -C /opt/ \
+    && mv /opt/ZAP_2.17.0 /opt/zap \
+    && rm /tmp/zap.tar.gz \
+    && ln -s /opt/zap/zap.sh /usr/local/bin/zap.sh
 
 # Install Gitleaks binary (Feature 7)
 RUN wget https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz \

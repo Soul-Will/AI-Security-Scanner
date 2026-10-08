@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.routers import scans
 from src.routers import github
+from src.routers import liveurl
 
 from arq import create_pool
 
@@ -9,6 +10,7 @@ from src.shared_services.redis import redis_settings
 
 app = FastAPI(title="AI Security Scanner")
 app.include_router(github.router)
+app.include_router(liveurl.router)
 app.include_router(scans.router)
 
 app.add_middleware(

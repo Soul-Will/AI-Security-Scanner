@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, RefreshCw, Search, CheckCircle2, Loader2, Sparkles, FileCode, AlertTriangle, Bug, Clock, ShieldCheck, Download } from "lucide-react";
+import { ArrowLeft, RefreshCw, Search, CheckCircle2, Loader2, Sparkles, FileCode, AlertTriangle, Bug, Clock, ShieldCheck, Download, Globe } from "lucide-react";
 
 const PIPELINE_STAGES = ["queued", "validating", "preparing", "scanning", "triaging", "completed"];
 
@@ -72,6 +72,7 @@ export default function ScanDetailsPage() {
         .select(`
           *,
           github_job_details(*),
+          url_job_details(*),
           reports(*)
         `)
         .eq("id", id)
@@ -89,6 +90,17 @@ export default function ScanDetailsPage() {
          if (gh) {
            t = `${gh.repo_owner}/${gh.repo_name}`;
            s = gh.repo_url;
+         }
+      } else if (jobData.input_channel === "url" && jobData.url_job_details) {
+         const u = Array.isArray(jobData.url_job_details) ? jobData.url_job_details[0] : jobData.url_job_details;
+         if (u) {
+           try {
+             const parsedUrl = new URL(u.target_url);
+             t = parsedUrl.hostname;
+           } catch(e) {
+             t = u.target_url;
+           }
+           s = u.target_url;
          }
       } else if (jobData.input_url) {
          t = jobData.input_url;
@@ -504,9 +516,13 @@ export default function ScanDetailsPage() {
                           </h4>
                           
                           <div className="flex items-center text-sm text-gray-500 mt-2 gap-2">
-                             <FileCode className="w-4 h-4 text-gray-400" />
-                             <span className="font-mono text-gray-600">{finding.file_path || "N/A"}</span>
-                             {finding.line_start && (
+                             {job?.input_channel === 'url' ? <Globe className="w-4 h-4 text-gray-400" /> : <FileCode className="w-4 h-4 text-gray-400" />}
+                             <span className="font-mono text-gray-600">
+                               {finding.file_path && finding.file_path !== 'N/A' 
+                                 ? finding.file_path 
+                                 : (job?.input_channel === 'url' ? jobDetails.subtitle : "N/A")}
+                             </span>
+                             {finding.line_start && (job?.input_channel !== 'url' || (finding.file_path && finding.file_path !== 'N/A')) && (
                                 <>
                                   <span className="text-gray-300">|</span>
                                   <span>Line {finding.line_start} {finding.line_end && finding.line_end !== finding.line_start && `- ${finding.line_end}`}</span>

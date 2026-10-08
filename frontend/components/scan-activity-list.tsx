@@ -35,6 +35,7 @@ export function ScanActivityList() {
         .select(`
           *,
           github_job_details(*),
+          url_job_details(*),
           reports(*)
         `)
         .eq("user_id", "c5f01e76-49b6-4234-9eac-dda501ca577c")
@@ -57,6 +58,17 @@ export function ScanActivityList() {
             if (gh) {
               name = `${gh.repo_owner}/${gh.repo_name}`;
               url = gh.repo_url;
+            }
+          } else if (job.input_channel === "url" && job.url_job_details) {
+            const u = Array.isArray(job.url_job_details) ? job.url_job_details[0] : job.url_job_details;
+            if (u) {
+              try {
+                const parsedUrl = new URL(u.target_url);
+                name = parsedUrl.hostname;
+              } catch(e) {
+                name = u.target_url;
+              }
+              url = u.target_url;
             }
           }
           
